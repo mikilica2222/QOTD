@@ -3,6 +3,9 @@
 static Window *window;
 static TextLayer *text_layer;
 
+static BitmapLayer *image_layer;
+static GBitmap *quote_bitmap;
+
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   text_layer_set_text(text_layer, "Select");
 }
@@ -21,18 +24,32 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
 }
 
-static void window_load(Window *window) {
+static void add_quote_header_layer() {
+  quote_bitmap = gbitmap_create_with_resource(RESOURCE_ID_QUOTE);
+  image_layer = bitmap_layer_create(GRect(0, 0, 144, 40));
+  bitmap_layer_set_bitmap(image_layer, quote_bitmap);
+  layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(image_layer));
+}
+
+static void add_text_layer(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
-
   text_layer = text_layer_create((GRect) { .origin = { 0, 72 }, .size = { bounds.size.w, 20 } });
   text_layer_set_text(text_layer, "Press a button");
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(text_layer));
 }
 
+static void window_load(Window *window) {
+  add_quote_header_layer( );
+  add_text_layer(window);
+}
+
 static void window_unload(Window *window) {
   text_layer_destroy(text_layer);
+
+  gbitmap_destroy(quote_bitmap);
+  bitmap_layer_destroy(image_layer);
 }
 
 static void init(void) {
